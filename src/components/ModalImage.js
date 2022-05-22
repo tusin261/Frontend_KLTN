@@ -12,8 +12,8 @@ const ModalImage = ({ show, onHide, image }) => {
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <div className='container-fluid'>
-                    <img className='mw-100' src={image} alt={image} />
+                <div className='container-fluid d-flex justify-content-center'>
+                    <img className='mw-100' style={{maxHeight:460}} src={image} alt={image} />
                 </div>
             </Modal.Body>
             <Modal.Footer>

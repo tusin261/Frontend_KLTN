@@ -45,14 +45,14 @@ const ListImage = ({ listImage }) => {
     return (
         <div className='d-flex flex-wrap'>
             {listImage.map((e, index) => (
-                <img key={index} src={e.content} width="64" height="64"
+                <img key={index} src={e.content} width="64" height="64" className='rounded me-1'
                     onClick={() => showImage(e.content)} />
             ))}
             {lightboxDisplay && <div id="lightbox" onClick={hideLightBox}>
                 <button className='btn' onClick={showPrev}> <ArrowBackIosNewIcon /> </button>
                 <div className='d-flex flex-column'>
                     <img id="lightbox-img" src={imageToShow}></img>
-                    <a href={imageToShow} target="_blank" type='button' className='btn btn-primary'> Tải xuống <DownloadOutlinedIcon /> </a>
+                    <a href={imageToShow} target="_blank" type='button' className='btn shadow-none btn-secondary'> Tải xuống <DownloadOutlinedIcon /> </a>
                 </div>
                 <button className='btn' onClick={showNext}> <NavigateNextIcon /> </button>
             </div>}

@@ -2,19 +2,28 @@ import React, { useState } from 'react'
 import AppBar from '@mui/material/AppBar';
 import useAuth from '../context/AuthContext';
 import { Avatar, Drawer, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from 'react-router-dom';
 
 
 const TopbarAdmin = () => {
 
-    const { user } = useAuth();
+    const { user, dispatch  } = useAuth();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
+    let navigate = useNavigate();
+
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
     const handleClose = () => {
         setAnchorEl(null);
     };
+    const logout = ()=>{
+        dispatch({ type: 'LOGOUT' });
+        localStorage.removeItem("user");
+        navigate('/');
+    }
     return (
             <div className='row align-items-center mx-0 bg-primary py-2'>
                 <div className='col-md-6'>
@@ -68,12 +77,10 @@ const TopbarAdmin = () => {
                         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                     >
-                        <MenuItem>
-                            <Avatar /> Profile
+                        <MenuItem onClick={logout}>
+                            <LogoutIcon /> Đăng Xuất
                         </MenuItem>
-                        <MenuItem>
-                            <Avatar /> My account
-                        </MenuItem>
+                       
                     </Menu>
                 </div>
             </div>

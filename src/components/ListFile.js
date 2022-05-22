@@ -29,12 +29,23 @@ const ListFile = ({ listFile }) => {
     return (
         <div className='mt-1 border rounded bg-light'>
             {listFile.map((e, index) => (
-                <div key={index} className='d-flex align-items-center border-bottom'>
-                    <div className='d-flex justify-content-between flex-column'>
+                <div key={index} className='col-md-12'>
+                    {/* <div className='d-flex justify-content-between flex-column'>
                         <p className='mb-0'><b>{getFileName(e.content).filename}.{getFileName(e.content).filetype}</b></p>
                         <p className='mb-0'>{getFileName(e.content).filesize}</p>
                     </div>
-                    <a href={e.content} target="_blank" className='btn'><DownloadOutlinedIcon /></a>
+                    <a href={e.content} target="_blank" className='btn'><DownloadOutlinedIcon /></a> */}
+                    <div className='row align-items-center'>
+                        <div className='col-md-8'>
+                            <p className='mb-0'><b>{getFileName(e.content).filename}.{getFileName(e.content).filetype}</b></p>
+                        </div>
+                        <div className='col-md-2'>
+                            <p className='mb-0'>{getFileName(e.content).filesize}</p>
+                        </div>
+                        <div className='col-md-2'>
+                            <a href={e.content} target="_blank" className='btn'><DownloadOutlinedIcon /></a>
+                        </div>
+                    </div>
                 </div>
             ))}
         </div>
