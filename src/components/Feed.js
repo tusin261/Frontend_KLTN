@@ -15,7 +15,7 @@ const Feed = ({ socket }) => {
   const [length, setLength] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [fetchingPost, setFetchingPost] = useState(true);
-  axios.defaults.baseURL = "http://localhost:5000";
+  axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
   const config = {
     headers: {
       "Content-type": "application/json",

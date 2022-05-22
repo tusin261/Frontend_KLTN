@@ -43,7 +43,7 @@ const Chat = () => {
   let selectedChatCompare = useRef();
   const scrollRef = useRef();
   const inputMessageRef = useRef()
-  axios.defaults.baseURL = "http://localhost:5000";
+  axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
   const config = {
     headers: {
       "Content-type": "application/json",
@@ -177,7 +177,7 @@ const Chat = () => {
   }, [newMessage]);
 
   useEffect(() => {
-    socket = io("http://localhost:5000");
+    socket = io("https://backend-kltn.herokuapp.com");
 
     socket.on('notification new group', data => {
       console.log('assss');

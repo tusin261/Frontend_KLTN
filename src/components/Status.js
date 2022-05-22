@@ -15,7 +15,7 @@ const Status = ({ updateList, setPosts }) => {
     const [preview, setPreview] = useState(null);
     const [isError, setIsError] = useState(false);
     const [open, setOpen] = useState(false);
-    axios.defaults.baseURL = "http://localhost:5000";
+    axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
     const config = {
         headers: {
             "Content-type": "application/json",

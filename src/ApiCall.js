@@ -1,5 +1,5 @@
 import axios from "axios";
-axios.defaults.baseURL = "http://localhost:5000";
+axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
 const config = {
     headers: {
       "Content-type": "application/json",

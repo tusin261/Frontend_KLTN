@@ -42,7 +42,7 @@ const ModalDetailConversation = ({ showDetailConversation,
     const [loading, setLoading] = useState(false);
     const { conversationState, conversationDispatch } = useContext(ChatContext);
 
-    axios.defaults.baseURL = "http://localhost:5000";
+    axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
     const config = {
         headers: {
             "Content-type": "application/json",

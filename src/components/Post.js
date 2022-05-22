@@ -19,7 +19,7 @@ const Post = ({ post, socket, setPosts, posts }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [like, setLike] = useState(0);
 
-    axios.defaults.baseURL = "http://localhost:5000";
+    axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
     const config = {
         headers: {
             "Content-type": "application/json",

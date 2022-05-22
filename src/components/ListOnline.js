@@ -71,7 +71,7 @@ const StyledBadgeOff = styled(Badge)(({ theme }) => ({
 const ListOnline = ({ online,setSelectedConversation }) => {
     const { user } = useAuth();
     const [friend, setFriend] = useState([]);
-    axios.defaults.baseURL = "http://localhost:5000";
+    axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
     const config = {
         headers: {
             "Content-type": "application/json",

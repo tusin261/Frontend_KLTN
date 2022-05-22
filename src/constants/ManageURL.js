@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://localhost:5000/api/";
+const BACKEND_URL = "https://backend-kltn.herokuapp.com/api/";
 
 //login && register
 export const LOGIN = BACKEND_URL+"auth/login";

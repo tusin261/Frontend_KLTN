@@ -23,7 +23,7 @@ const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [gender,setGender] = useState('nam');
   let navigate = useNavigate();
-  //axios.defaults.baseURL = "http://localhost:5000";
+  //axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
   const config = {
     headers: {
       "Content-type": "application/json",

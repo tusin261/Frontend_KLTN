@@ -18,7 +18,7 @@ const Search = ({ setSelectedConversation, socket }) => {
     const [show, setShow] = useState(false);
     const [listResult, setListResult] = useState([]);
     const inputSearch = useRef();
-    axios.defaults.baseURL = "http://localhost:5000";
+    axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
     const config = {
         headers: {
             "Content-type": "application/json",

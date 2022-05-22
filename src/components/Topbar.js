@@ -55,7 +55,7 @@ const Topbar = ({ socket, setValue, value }) => {
     setValue(newValue);
   };
 
-  axios.defaults.baseURL = "http://localhost:5000";
+  axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
 
   useEffect(() => {
     if (selectedImage) {

@@ -11,7 +11,7 @@ const ModalEditUser = ({ show, onHide, userItem, users, setUsers, setShow }) => 
     const { user } = useAuth();
     const [messageError, setMessageError] = useState('');
     const [isError, setIsError] = useState(false);
-    axios.defaults.baseURL = "http://localhost:5000";
+    axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
     const config = {
         headers: {
             "Content-type": "application/json",
