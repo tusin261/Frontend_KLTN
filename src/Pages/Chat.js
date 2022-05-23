@@ -22,7 +22,8 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
-
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 let socket;
 const Chat = () => {
   const { user } = useAuth();
@@ -39,11 +40,12 @@ const Chat = () => {
   const [length, setLength] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [online, setOnline] = useState([]);
+  const [isError,setIsError] = useState(false);
   const idConverRef = useRef();
   let selectedChatCompare = useRef();
   const scrollRef = useRef();
   const inputMessageRef = useRef()
-  axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
+  axios.defaults.baseURL = "http://localhost:5000";
   const config = {
     headers: {
       "Content-type": "application/json",
@@ -54,21 +56,21 @@ const Chat = () => {
   //   setIsSelectedInput(true);
   // }
   const sendMessage = async () => {
-    if(inputMessageRef.current.value.trim() != '')
-    try {
-      const { data } = await axios.post("/api/messages", {
-        content: inputMessageRef.current.value,
-        conversation_id: selectedConversation._id,
-        type: 'text'
-      }, config);
-      socket.emit('send message', data);
-      setMessages((pre) => [data, ...pre]);
-      setNewMessage(data);
-      //inputMessageRef.current.focus();
-      inputMessageRef.current.value = ''
-    } catch (error) {
-      console.log(error);
-    }
+    if (inputMessageRef.current.value.trim() != '')
+      try {
+        const { data } = await axios.post("/api/messages", {
+          content: inputMessageRef.current.value,
+          conversation_id: selectedConversation._id,
+          type: 'text'
+        }, config);
+        socket.emit('send message', data);
+        setMessages((pre) => [data, ...pre]);
+        setNewMessage(data);
+        //inputMessageRef.current.focus();
+        inputMessageRef.current.value = ''
+      } catch (error) {
+        console.log(error);
+      }
   }
 
   const sendMessageImage = async (e) => {
@@ -83,6 +85,7 @@ const Chat = () => {
       socket.emit('send message', data);
       setMessages(newListMess);
     } catch (error) {
+      setIsError(true);
       console.log(error);
     }
   }
@@ -99,6 +102,7 @@ const Chat = () => {
       socket.emit('send message', data);
       setMessages(newListMess);
     } catch (error) {
+      setIsError(true);
       console.log(error);
     }
   }
@@ -127,6 +131,7 @@ const Chat = () => {
       socket.emit('send message', data);
       setMessages(newListMess);
     } catch (error) {
+      setIsError(true);
       console.log(error);
     }
   }
@@ -177,7 +182,7 @@ const Chat = () => {
   }, [newMessage]);
 
   useEffect(() => {
-    socket = io("https://backend-kltn.herokuapp.com");
+    socket = io("http://localhost:5000");
 
     socket.on('notification new group', data => {
       console.log('assss');
@@ -321,12 +326,22 @@ const Chat = () => {
   //     setSeenMessage();
   //   }
   // },[isSelectedInput,newMessage])
-
+  const handleCloseToast = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setIsError(false);
+  };
   return (
     <div className='container-fluid'>
       <div className='row'>
         <Topbar socket={socket} setValue={setValue} value={value} />
       </div>
+      <Snackbar open={isError} autoHideDuration={4000} onClose={handleCloseToast}>
+        <Alert onClose={handleCloseToast} severity="warning" sx={{ width: '100%' }}>
+          Kích thước file phải ít hơn 2MB
+        </Alert>
+      </Snackbar>
       {value == 1 ? <div className='row justify-content-between'>
         <div className='col-lg-3 overflow-auto border rounded box-sidebar'>
           <Sidebar setSelectedConversation={setSelectedConversation}
