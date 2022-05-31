@@ -11,7 +11,7 @@ import ModalVideoChat from './ModalVideoChat';
 import Avatar from '@mui/material/Avatar';
 import PeopleIcon from '@mui/icons-material/People';
 const InfoConversation = ({ selectedConversation, setSelectedConversation,socket,
-    listImage,listFile,setMessages,messages }) => {
+    listImage,listFile,setMessages,messages,groupUpdated }) => {
     const { user } = useAuth();
     // !selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name    
     const [loading, setLoading] = useState(false);
@@ -24,8 +24,7 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
     }
     const getImageConversation = (user,conversation)=>{
         return conversation.member[0]._id===user._id?conversation.member[1].image_url:conversation.member[0].image_url;
-      }
-
+    }
     return (
         <div className='col-lg-12 border rounded'>
             <div className='w-100 d-flex justify-content-between align-items-center'>
@@ -35,7 +34,7 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
                     {/* <img width="42" height="42" className='rounded-circle' alt="100x100" src={selectedConversation.isGroupChat?selectedConversation.group_image:getImageConversation(user,selectedConversation)} /> */}
                     <div className='ms-2'>
                         <h5 className='mb-0'>{!selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name}</h5>
-                        {selectedConversation.isGroupChat &&<span>{selectedConversation.member.length} Thành viên</span>}
+                        {selectedConversation.isGroupChat &&<span>{groupUpdated?groupUpdated.member.length:selectedConversation.member.length} Thành viên</span>}
                     </div>
                 </div>
                 <div className='d-flex align-items-center'>
@@ -46,7 +45,8 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
                         selectedConversation={selectedConversation} 
                         setSelectedConversation={setSelectedConversation} 
                         listImage={listImage} 
-                        listFile={listFile} socket={socket} setMessages={setMessages} messages={messages} />}
+                        listFile={listFile} socket={socket} setMessages={setMessages}
+                        messages={messages} groupUpdated={groupUpdated}/>}
                     
                 </div>
             </div>

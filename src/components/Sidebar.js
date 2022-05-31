@@ -16,7 +16,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-const Sidebar = ({ setSelectedConversation, messages, socket, online,selectedConversation }) => {
+const Sidebar = ({ setSelectedConversation, messages, socket, online, selectedConversation }) => {
   const { user } = useAuth();
   //group
   const [groupChatName, setGroupChatName] = useState('');
@@ -34,7 +34,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket, online,selectedCon
       return;
     }
     setSuccessCreateGroup(false);
-    setSuccessCreateGroup(false);
+    setErrorCreateGroup(false);
   };
   axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
   const config = {
@@ -95,10 +95,17 @@ const Sidebar = ({ setSelectedConversation, messages, socket, online,selectedCon
   }
 
   const handleResetModal = () => {
+    setGroupChatName('');
+    setListResult([]);
     setListMember([]);
   }
 
   const createGroup = async () => {
+    if(listMember.length < 1 || groupChatName === ''){
+      setErrorCreateGroup(true);
+      handleResetModal();
+      return;
+    }
     const jsonData = {
       chat_name: groupChatName,
       member: JSON.stringify(listMember.map((u) => u._id))
@@ -139,7 +146,6 @@ const Sidebar = ({ setSelectedConversation, messages, socket, online,selectedCon
   }, [messages]);
 
 
-
   return (
     <div className='col-lg-12'>
       <button className='btn btn-primary mt-2' data-bs-toggle="modal" data-bs-target="#modalGroup">Tạo Group Chat <AddOutlinedIcon /></button>
@@ -173,7 +179,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket, online,selectedCon
             <div className="modal-body">
               <form>
                 <div className="mb-3">
-                  <input type="text" className="form-control" onChange={(e) => setGroupChatName(e.target.value)} placeholder='Nhập tên nhóm' />
+                  <input type="text" className="form-control" value={groupChatName} onChange={(e) => setGroupChatName(e.target.value)} placeholder='Nhập tên nhóm' />
                 </div>
                 <div className="mb-1">
                   <input type="text" className="form-control" ref={inputSearch} onChange={searchMember} placeholder='Nhập tên để thêm vào nhóm' />
@@ -221,7 +227,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket, online,selectedCon
             <div key={c._id} onClick={() => {
               handleClickConversation(c)
             }}>
-              <BoxConversation con={c} selectedConversation={selectedConversation}/>
+              <BoxConversation con={c} selectedConversation={selectedConversation} />
             </div>
           ))}
         </div> : <div className='row'>

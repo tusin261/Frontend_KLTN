@@ -19,7 +19,8 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 const ModalDetailConversation = ({ showDetailConversation,
     onHide,
     selectedConversation,
-    setSelectedConversation, socket, listImage, listFile, setMessages, messages }) => {
+    setSelectedConversation, socket, listImage, listFile, setMessages,
+    messages,groupUpdated }) => {
     const inputSearch = useRef();
     const imageInput = useRef();
     const [preview, setPreview] = useState();
@@ -38,7 +39,6 @@ const ModalDetailConversation = ({ showDetailConversation,
     const [errorKickMember, setErrorKickMember] = useState(false);
     const [errorChangeImage, setErrorChangeImage] = useState(false);
     const [errorChangeName, setErrorChangeName] = useState(false);
-
     const [loading, setLoading] = useState(false);
     const { conversationState, conversationDispatch } = useContext(ChatContext);
 
@@ -115,7 +115,9 @@ const ModalDetailConversation = ({ showDetailConversation,
             const { data } = await axios.put("/api/chats/remove-group", jsonData, config);
             const action = 'đã bị xóa khỏi nhóm';
             console.log('xoa tanh vien');
+            socket.emit('send notification kick member', {memId:mem._id,group:data});
             sendMessageNotificationDeleteMember(action, mem);
+            createNotificationKickMember(data,mem._id);
             setSelectedConversation(data);
             setSuccessKickMember(true);
         } catch (error) {
@@ -123,6 +125,22 @@ const ModalDetailConversation = ({ showDetailConversation,
             console.log(error);
         }
     }
+
+    const createNotificationKickMember = async (group,memberId) => {
+        const memberKick = [{_id:memberId}];
+        const newGroup = {...group,member:memberKick};
+        console.log(newGroup);
+        const jsonData = {
+            type: 'kick_group',
+            group: newGroup
+        }
+        try {
+            const { data } = await axios.post(API.CREATE_NOTI_GROUP, jsonData, config);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const searchMember = async (e) => {
         const keyword = e.target.value;
         try {
@@ -158,6 +176,7 @@ const ModalDetailConversation = ({ showDetailConversation,
             try {
                 const { data } = await axios.put("/api/chats/add-group", jsonData, config);
                 const action = 'đã được thêm vào nhóm';
+                socket.emit('send notification add member to group', {group:data});
                 sendMessageNotification(action);
                 setSelectedConversation(data);
                 setListResult([]);
@@ -167,7 +186,7 @@ const ModalDetailConversation = ({ showDetailConversation,
                 console.log(error);
                 setErrorAddMember(true);
             }
-        }else{
+        } else {
             setErrorAddMember(true);
         }
     }
@@ -227,6 +246,7 @@ const ModalDetailConversation = ({ showDetailConversation,
         try {
             const { data } = await axios.put("/api/chats/remove-group", jsonData, config);
             const action = 'đã rời khỏi nhóm';
+            socket.emit('send notification member out group', {group:data});
             sendMessageNotificationOutGroup(action, user);
             setSelectedConversation(null);
             getList();
@@ -273,6 +293,7 @@ const ModalDetailConversation = ({ showDetailConversation,
         }
     }, [selectedImage]);
 
+
     return (
         <Modal show={showDetailConversation} onHide={onHide}>
             <div className="modal-header">
@@ -296,7 +317,7 @@ const ModalDetailConversation = ({ showDetailConversation,
                     {selectedConversation.isGroupChat && <>
                         <div className='row'>
                             <div className="mb-1 px-0">
-                                <label className="form-label">Tên cuộc trò chuyện</label>
+                                <label className="form-label">Tên nhom</label>
                                 <input type="text" className="form-control" value={groupChatName}
                                     onChange={(e) => setGroupChatName(e.target.value)} />
                                 <div className="input-group-append my-2">
@@ -309,7 +330,7 @@ const ModalDetailConversation = ({ showDetailConversation,
                             {/* Thành viên-------------------------------------------------------------------- */}
                             <h5>Thành viên</h5>
                             <ul className='list-group px-0'>
-                                {(selectedConversation.member).map((item, index) => (
+                                {(groupUpdated?groupUpdated.member:selectedConversation.member).map((item, index) => (
                                     <li className="list-group-item" key={index}>
                                         <div className='row'>
                                             <div className='col-lg-12 d-flex align-items-center'>

@@ -28,8 +28,12 @@ const TableUser = () => {
     const [userByMonth, setUserByMonth] = useState(0);
     const [open, setOpen] = useState(false);
     const [userItem, setUserItem] = useState(null);
-    const [successDelete,setSuccessDelete] = useState(false);
-    const [errorDelete,setErrorDelete] = useState(false);
+    const [successDelete, setSuccessDelete] = useState(false);
+    const [errorDelete, setErrorDelete] = useState(false);
+    const [rowDelete,setRowDelete] = useState();
+    const [isSuccessUpdate,setIsSuccessUpdate] = useState(false);
+    const [successLock, setSuccessLock] = useState(false);
+    const [errorLock, setErrorLock] = useState(false);
     const nameRef = useRef();
     const emailRef = useRef();
 
@@ -44,8 +48,7 @@ const TableUser = () => {
     useEffect(() => {
         getListUser();
         getUserByMonth();
-    }, [])
-
+    }, []);
 
     const getListUser = async () => {
         try {
@@ -81,27 +84,32 @@ const TableUser = () => {
             const { data } = await axios.post(`/api/admin/updateUser`, json, config);
             const userUpdated = users.map(i => i._id == data._id ? { ...i, isVerified: data.isVerified } : i);
             setUsers(userUpdated);
+            setSuccessLock(true);
+            setErrorLock(false);
         } catch (error) {
             console.log(error.response.data.message);
-
+            setErrorLock(true);
+            setSuccessLock(false);
         }
     }
 
 
 
-    const deleteUser = async (u) => {
+    const deleteUser = async () => {
         const json = {
             isLock: false,
             isDelete: true,
             isChange: false,
-            userId: u._id,
+            userId: rowDelete._id,
         }
         try {
             const { data } = await axios.post(`/api/admin/updateUser`, json, config);
-            const userUpdated = users.filter((i) => i._id != u._id);
+            const userUpdated = users.filter((i) => i._id != rowDelete._id);
             setUsers(userUpdated);
             setOpen(false);
             setSuccessDelete(true);
+            setRowDelete(null);
+            setTotal(total-1);
         } catch (error) {
             console.log(error);
             setErrorDelete(true);
@@ -115,6 +123,9 @@ const TableUser = () => {
         setOpen(false);
         setSuccessDelete(false);
         setErrorDelete(false);
+        setIsSuccessUpdate(false);
+        setErrorLock(false);
+            setSuccessLock(false);
     };
     const search = async () => {
         const json = {
@@ -133,8 +144,9 @@ const TableUser = () => {
         setUserItem(null);
     }
 
-    const openDialog = () => {
+    const openDialog = (u) => {
         setOpen(true);
+        setRowDelete(u);
     }
     const openModalEdit = (u) => {
         setUserItem(u);
@@ -180,6 +192,23 @@ const TableUser = () => {
                 </div>
             </div>
             <div className='col-md-12 my-3'>
+                <Dialog
+                    open={open}
+                    onClose={handleClose}
+                    aria-describedby="alert-dialog-slide-description"
+                >
+                    <DialogTitle>{"Xóa người dùng này?"}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="alert-dialog-slide-description">
+                            Dữ liệu của người dùng này sẽ không thể khôi phục nếu bạn nhấn
+                            đồng ý.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>Hủy</Button>
+                        <Button onClick={deleteUser}>Đồng Ý</Button>
+                    </DialogActions>
+                </Dialog>
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 650 }} aria-label="table">
                         <TableHead sx={{ backgroundColor: "orange" }}>
@@ -208,30 +237,14 @@ const TableUser = () => {
                                     <TableCell align="left"><Switch
                                         checked={row.isVerified}
                                         onChange={() => handleChange(row)}
-                                        inputProps={{ 'aria-label': 'controlled' }}
-                                    /></TableCell>
+                                        inputProps={{ 'aria-label': 'controlled' }} /></TableCell>
+
                                     <TableCell align="center">
-                                        <IconButton color="error" onClick={openDialog} >
+                                        <IconButton color="error" onClick={() => openDialog(row)}>
                                             <ClearIcon />
                                         </IconButton>
                                         {/* dialog-------- */}
-                                        <Dialog
-                                            open={open}
-                                            onClose={handleClose}
-                                            aria-describedby="alert-dialog-slide-description"
-                                        >
-                                            <DialogTitle>{"Xóa người dùng này?"}</DialogTitle>
-                                            <DialogContent>
-                                                <DialogContentText id="alert-dialog-slide-description">
-                                                    Dữ liệu của người dùng này sẽ không thể khôi phục nếu bạn nhấn
-                                                    đồng ý.
-                                                </DialogContentText>
-                                            </DialogContent>
-                                            <DialogActions>
-                                                <Button onClick={handleClose}>Hủy</Button>
-                                                <Button onClick={() => deleteUser(row)}>Đồng Ý</Button>
-                                            </DialogActions>
-                                        </Dialog>
+
                                     </TableCell>
                                     <TableCell align="center">
                                         <IconButton color="primary" onClick={() => openModalEdit(row)}>
@@ -244,7 +257,7 @@ const TableUser = () => {
                                 onHide={handleCloseModal}
                                 userItem={userItem} users={users}
                                 setUsers={setUsers}
-                                setShow={setShow} />}
+                                setShow={setShow} setIsSuccessUpdate={setIsSuccessUpdate} />}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -255,8 +268,23 @@ const TableUser = () => {
                 </Alert>
             </Snackbar>
             <Snackbar open={errorDelete} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
                     Xóa người dùng không thành công
+                </Alert>
+            </Snackbar>
+            <Snackbar open={isSuccessUpdate} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    Cập nhật thông tin người dùng thành công
+                </Alert>
+            </Snackbar>
+            <Snackbar open={errorLock} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                    Khóa tài khoản không thành công
+                </Alert>
+            </Snackbar>
+            <Snackbar open={successLock} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    Khóa tài khoản thành công
                 </Alert>
             </Snackbar>
         </div>

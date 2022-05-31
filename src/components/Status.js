@@ -5,6 +5,8 @@ import ImageIcon from '@mui/icons-material/Image';
 import MovieIcon from '@mui/icons-material/Movie';
 import axios from 'axios';
 import useAuth from '../context/AuthContext';
+import CircularProgress from '@mui/material/CircularProgress';
+
 const Status = ({ updateList, setPosts }) => {
     const { user } = useAuth();
     const imageRef = useRef();
@@ -14,7 +16,9 @@ const Status = ({ updateList, setPosts }) => {
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [preview, setPreview] = useState(null);
     const [isError, setIsError] = useState(false);
+    const [isErrorPost,setIsErrorPost] = useState(false);
     const [open, setOpen] = useState(false);
+    const [loading,setLoading] = useState(false);
     axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
     const config = {
         headers: {
@@ -44,10 +48,12 @@ const Status = ({ updateList, setPosts }) => {
 
 
     const handleSubmit = async () => {
+        setLoading(true);
         if (statusRef.current.value == '') {
+            setLoading(false);
+            setIsErrorPost(true);
             return;
         }
-
         if (!selectedImage && !selectedVideo) {
             //post text
             const json = {
@@ -58,6 +64,7 @@ const Status = ({ updateList, setPosts }) => {
             //updateList();
             setDefaultInput();
             setPosts((preState) => [data, ...preState]);
+            setLoading(false);
         } else {
             //post with media
             try {
@@ -69,6 +76,7 @@ const Status = ({ updateList, setPosts }) => {
                     //get all post
                     setDefaultInput();
                     setIsError(false);
+                    setLoading(false);
                     setPosts((preState) => [data, ...preState]);
                 } else {
                     const formData = new FormData();
@@ -78,6 +86,7 @@ const Status = ({ updateList, setPosts }) => {
                     //get all post
                     setDefaultInput();
                     setIsError(false);
+                    setLoading(false);
                     setPosts((preState) => [data, ...preState]);
                 }
             } catch (error) {
@@ -101,6 +110,7 @@ const Status = ({ updateList, setPosts }) => {
         }
         setOpen(false);
         setIsError(false);
+        setIsErrorPost(false);
     };
     useEffect(() => {
         if (selectedImage) {
@@ -141,6 +151,11 @@ const Status = ({ updateList, setPosts }) => {
                         "Kích thước file không hợp lệ"
                     </Alert>
                 </Snackbar>
+                <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'right' }} open={isErrorPost} autoHideDuration={3000} onClose={handleClose}>
+                    <Alert severity="warning" sx={{ width: '100%' }}>
+                        "Vui lòng điền nội dung bài đăng"
+                    </Alert>
+                </Snackbar>
                 <div className='row p-2 align-items-center'>
                     <div className='col-md-1'>
                         <Avatar alt="Remy Sharp" src={user.image_url} />
@@ -178,21 +193,23 @@ const Status = ({ updateList, setPosts }) => {
                 <div className='row justify-content-end p-2'>
                     <div className='col-md-9'>
                         <label htmlFor='input-image'>
-                            <input type="file" accept='image/*' id='input-image'
+                            <input type="file" accept=".jpg,.png" id='input-image'
                                 ref={imageRef}
                                 style={{ display: 'none' }} onChange={handleImageChange} />
                             <ImageIcon color="primary" sx={{ fontSize: 24, mr: 2 }} />
                         </label>
                         {/* chua check file type */}
                         <label htmlFor='input-video'>
-                            <input type="file" id='input-video'
+                            <input type="file" id='input-video' accept='video/mp4,.mp3'
                                 ref={videoRef}
                                 style={{ display: 'none' }} onChange={handleVideoChange} />
                             <MovieIcon color="primary" sx={{ fontSize: 24 }} />
                         </label>
                     </div>
                     <div className='col-md-2'>
-                        <button className='btn btn-primary' onClick={handleSubmit}>Đăng</button>
+                        <button className='btn btn-primary'
+                         onClick={handleSubmit} 
+                         disabled={loading}>{loading ? <CircularProgress color="secondary" /> : 'Đăng'}</button>
                     </div>
                 </div>
             </div>

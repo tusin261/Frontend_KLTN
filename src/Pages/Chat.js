@@ -24,6 +24,7 @@ import IconButton from '@mui/material/IconButton';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
+import { Box } from '@mui/material';
 let socket;
 const Chat = () => {
   const { user } = useAuth();
@@ -40,12 +41,15 @@ const Chat = () => {
   const [length, setLength] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [online, setOnline] = useState([]);
-  const [isError,setIsError] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [isNewNoti, setIsNewNoti] = useState(true);
+  const [groupUpdated,setGroupUpdated] = useState(null);
+
   const idConverRef = useRef();
   let selectedChatCompare = useRef();
   const scrollRef = useRef();
   const inputMessageRef = useRef()
-  axios.defaults.baseURL = "http://localhost:5000";
+  axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
   const config = {
     headers: {
       "Content-type": "application/json",
@@ -113,13 +117,7 @@ const Chat = () => {
       headers: {
         'Content-Type': 'multipart/form-data',
         "Authorization": `Bearer ${user.accessToken}`
-      },
-      onUploadProgress: function (progressEvent) {
-        var percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
-        console.log(percentCompleted);
-      },
+      }
     };
     const formData = new FormData();
     formData.append("video", fileSelected);
@@ -144,28 +142,6 @@ const Chat = () => {
     sendMessage();
   }
 
-  const setSeenMessage = async () => {
-    const lastestMessage = messages.pop();
-    let readBy = [];
-    if (lastestMessage) {
-      const isExist = lastestMessage.readBy.filter((e) => e == user._id);
-      readBy.push(user._id);
-      const jsonData = {
-        lastestMessage,
-        readBy: JSON.stringify(readBy)
-      }
-      if (lastestMessage.sender_id._id != user._id && isExist.length == 0) {
-        try {
-          const { data } = await axios.post("/api/messages/update-message", jsonData, config);
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    } else {
-      return;
-    }
-  }
-
   const getList = async () => {
     conversationDispatch({ type: "GET_CHATS_START" });
     try {
@@ -182,17 +158,14 @@ const Chat = () => {
   }, [newMessage]);
 
   useEffect(() => {
-    socket = io("http://localhost:5000");
+    socket = io("https://backend-kltn.herokuapp.com");
 
     socket.on('notification new group', data => {
-      console.log('assss');
-      console.log(data);
       setNewMessage(data);
     })
 
     socket.on('new message', (newMess) => {
       if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
-        console.log('messssssss');
         setNewMessage(newMess);
       } else {
         setMessages((pre) => [newMess, ...pre]);
@@ -201,7 +174,6 @@ const Chat = () => {
 
     socket.on('new message group', (newMess) => {
       if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
-        console.log('grouppppppp');
         setNewMessage(newMess);
       } else {
         setMessages((pre) => [newMess, ...pre]);
@@ -210,6 +182,29 @@ const Chat = () => {
     socket.on('new message mem out group', (data) => {
       setSelectedConversation(null);
       setNewMessage(data);
+    });
+
+    socket.on('notification new group', data => {
+      setIsNewNoti(false);
+    })
+    socket.on('new request friend', data => {
+      setIsNewNoti(false);
+    });
+    socket.on('new request accept friend', data => {
+      setIsNewNoti(false);
+    });
+    socket.on('new noti like', data => {
+      setIsNewNoti(false);
+    });
+    socket.on('notification kick member', ({memId,group}) => {
+      setIsNewNoti(false);
+      // setGroupUpdated(group);
+      // console.log('abc kick');
+    });
+    socket.on('notification update group', (group) => {
+      //setIsNewNoti(false);
+      setGroupUpdated(group);
+      // console.log('abc kick');
     });
   }, []);
 
@@ -227,28 +222,15 @@ const Chat = () => {
   useEffect(() => {
     if (selectedConversation) {
       socket.emit('join chat', selectedConversation);
-      // idConverRef.current = selectedConversation._id;
-      // getMessage();
-      // console.log("selectedConversation", selectedConversation);
       setPage(1);
       setHasMore(true);
-      // setMessages([]);
       getMessageCurrenConversation();
       selectedChatCompare.current = selectedConversation;
+      setGroupUpdated(null);
     }
   }, [selectedConversation]);
 
-  const getMessageDiffConver = async (page) => {
-    try {
-      const { data } = await axios.get(`/api/messages/${selectedConversation._id}?page=${page}`, config);
-      return data;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   const getMessageCurrenConversation = async () => {
-    console.log('do current');
     const curr = 0;
     try {
       const { data } = await axios.get(`/api/messages/${selectedConversation._id}?page=${curr}`, config);
@@ -256,7 +238,6 @@ const Chat = () => {
       setMessages(listMess);
       setLength(listMess.length);
       if (listMess.length === 0 || listMess.length < 10) {
-        console.log('a');
         setHasMore(false);
       }
     } catch (error) {
@@ -265,7 +246,6 @@ const Chat = () => {
   }
 
   const getMoreMessage = async () => {
-    console.log(page);
     try {
       const { data } = await axios.get(`/api/messages/${selectedConversation._id}?page=${page}`, config);
       const listMess = data.list;
@@ -282,29 +262,6 @@ const Chat = () => {
   }
 
 
-  const getMessage = async () => {
-    try {
-      const { data } = await axios.get(`/api/messages/${selectedConversation._id}?page=${page}`, config);
-      const listMess = data.list;
-      if (listMess[0].conversation_id._id !== idConverRef.current) {
-        console.log('aaaa');
-        setMessages(listMess);
-        setPage(0);
-      } else {
-        console.log('bbbb');
-        const arr = [...messages, ...listMess];
-        setMessages(arr);
-        setPage(page + 1);
-      }
-      if (listMess.length === 0 || listMess.length < 10) {
-        setHasMore(false);
-      }
-      setLength(listMess.total);
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -321,11 +278,6 @@ const Chat = () => {
     }
   }, [messages]);
 
-  // useEffect(()=>{
-  //   if(selectedConversation && messages.length > 0){
-  //     setSeenMessage();
-  //   }
-  // },[isSelectedInput,newMessage])
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -335,7 +287,8 @@ const Chat = () => {
   return (
     <div className='container-fluid'>
       <div className='row'>
-        <Topbar socket={socket} setValue={setValue} value={value} />
+        <Topbar socket={socket} setValue={setValue} value={value} isNewNoti={isNewNoti}
+          setIsNewNoti={setIsNewNoti} />
       </div>
       <Snackbar open={isError} autoHideDuration={4000} onClose={handleCloseToast}>
         <Alert onClose={handleCloseToast} severity="warning" sx={{ width: '100%' }}>
@@ -353,7 +306,7 @@ const Chat = () => {
             setSelectedConversation={setSelectedConversation}
             selectedConversation={selectedConversation}
             socket={socket} listImage={listImage} listFile={listFile}
-            setMessages={setMessages} messages={messages} />}
+            setMessages={setMessages} messages={messages} groupUpdated={groupUpdated} />}
           <div className='box-chat border rounded d-flex flex-column-reverse' id='scrollableDiv'>
             {selectedConversation &&
               <InfiniteScroll
@@ -363,7 +316,8 @@ const Chat = () => {
                 dataLength={length}
                 next={getMoreMessage}
                 hasMore={hasMore}>
-              </InfiniteScroll>}
+              </InfiniteScroll>
+            }
             {selectedConversation && messages.map((i, index, currentArr) => (
               <div className='p-2' key={i._id}>
                 {currentArr.length - 1 == index ? <Message message={i} own={i.sender_id._id == user._id}
@@ -373,6 +327,7 @@ const Chat = () => {
                 <div ref={scrollRef}></div>
               </div>
             ))}
+            
           </div>
 
           {/* onChange={(e) => setNewMessage(e.target.value)} */}

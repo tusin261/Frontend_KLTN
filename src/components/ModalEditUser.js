@@ -4,13 +4,15 @@ import useAuth from '../context/AuthContext';
 import { Alert, Snackbar} from '@mui/material';
 import axios from 'axios';
 
-const ModalEditUser = ({ show, onHide, userItem, users, setUsers, setShow }) => {
+const ModalEditUser = ({ show, onHide, userItem, users, setUsers, setShow,setIsSuccessUpdate }) => {
     const [lastName, setLastName] = useState(userItem.last_name);
     const [firstName, setFirstName] = useState(userItem.first_name);
     const [email, setEmail] = useState(userItem.email);
     const { user } = useAuth();
     const [messageError, setMessageError] = useState('');
     const [isError, setIsError] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+
     axios.defaults.baseURL = "https://backend-kltn.herokuapp.com";
     const config = {
         headers: {
@@ -24,6 +26,7 @@ const ModalEditUser = ({ show, onHide, userItem, users, setUsers, setShow }) => 
         }
         setIsError(false);
         setMessageError('');
+        setIsSuccess(false);
     }
     const updateUser = async () => {
         const json = {
@@ -42,11 +45,12 @@ const ModalEditUser = ({ show, onHide, userItem, users, setUsers, setShow }) => 
             setUsers(userUpdated);
             setShow(false);
             setIsError(false);
-
+            setIsSuccessUpdate(true);
         } catch (error) {
             console.log(error.response.data.message);
             setIsError(true);
             setMessageError(error.response.data.message);
+            setIsSuccessUpdate(false);
         }
     }
 
